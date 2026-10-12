@@ -1,3 +1,7 @@
+# MDDT Agent OS
+
+Downstream fork of DeepSeek Harness. [Fork status and roadmap](MDDT_AGENT_OS.md). The original project documentation follows.
+
 # DeepSeek Harness
 
 English | [中文](README.zh.md)
