@@ -13,6 +13,11 @@
     thinking: enabled
     reasoningEffort: max
 
+# This recorded SDK scenario deliberately exercises the optional upload path.
+- id: session-log-deepseek
+  config:
+    enabled: true
+
 - id: session-persistence-jsonl
   name: '@deepseek-ai/dsh-session-persistence-jsonl'
   config:

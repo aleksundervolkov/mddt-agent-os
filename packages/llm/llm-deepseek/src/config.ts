@@ -50,6 +50,8 @@ export interface Config {
   fileRefreshMarginSeconds: Volatile<number>
   /** Oldest harness-owned files deleted before one quota-recovery upload retry (default 100). */
   fileQuotaCleanupBatch: Volatile<number>
+  /** Send a persistent installation id and Session id to the provider. Defaults to `false`. */
+  sendInstallationIdentity: Volatile<boolean>
   /** Provider-owned model-request retry policy; omission uses normal mode with five retries. */
   retryPolicy: Volatile<RetryPolicyConfig | undefined>
 }
@@ -97,6 +99,7 @@ export const deepSeekConfigFields = {
   fileExpiresAfterSeconds: z.number().step(1).min(3_600).max(2_592_000).default(DEFAULT_FILE_EXPIRY_SECONDS).volatile(),
   fileRefreshMarginSeconds: z.number().step(1).min(0).default(DEFAULT_FILE_REFRESH_MARGIN_SECONDS).volatile(),
   fileQuotaCleanupBatch: z.number().step(1).min(1).max(1_000).default(DEFAULT_FILE_QUOTA_CLEANUP_BATCH).volatile(),
+  sendInstallationIdentity: z.boolean().default(false).volatile(),
   retryPolicy: RetryPolicySchema.volatile(),
 }
 
@@ -301,6 +304,7 @@ export function resolveAdapterOptions(config: Options, environment?: LaunchEnvir
     maxTokens: config.maxTokens ?? DEFAULT_MAX_TOKENS,
     defaultContextWindow: config.defaultContextWindow ?? DEFAULT_CONTEXT_WINDOW,
     models: resolveModels(config.models),
+    sendInstallationIdentity: config.sendInstallationIdentity === true,
     streamIdleTimeoutMs,
     maxRequestFilesBytes,
     maxInlineRequestImageBytes,

@@ -2431,7 +2431,7 @@ export interface Config {
 ```ts config-catalog
 /** Plugin-package request contribution configuration. */
 export interface Config {
-  /** Contribute `dsh_plugin_packages` to official DeepSeek requests. Defaults to `true`. */
+  /** Contribute `dsh_plugin_packages` to official DeepSeek requests only when enabled. Defaults to `false`. */
   enabled?: boolean
 }
 ```
@@ -2717,7 +2717,7 @@ export interface JsonRpcConfig {
 ```ts config-catalog
 /** Session-log request contribution configuration. */
 export interface Config {
-  /** Contribute `dsh_session_log` to official DeepSeek requests. Defaults to `true`. */
+  /** Contribute `dsh_session_log` to official DeepSeek requests only when explicitly enabled. Defaults to `false`. */
   enabled: Volatile<boolean>
   /**
    * Largest serialized `dsh_session_log` field, in UTF-8 bytes, that one request carries.
@@ -2888,7 +2888,7 @@ export interface Config {
  * and shutdown deadline at plugin load; `DISABLED` reads neither.
  */
 export interface Config {
-  /** Defaults to `FEEDBACK_ONLY`: capture session history only when feedback is explicitly submitted. */
+  /** Defaults to `DISABLED`; `FEEDBACK_ONLY` exports canonical history after explicit feedback. */
   mode?: SessionTelemetryMode
   /**
    * Explicit SDK HTTP transport settings, including optional routing headers.

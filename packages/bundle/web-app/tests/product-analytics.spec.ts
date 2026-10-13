@@ -51,13 +51,17 @@ it.each(['desktop', 'web'])('limits collection and its shutdown to the Desktop l
     scheduledDelayMillis: 30000, timeoutMillis: 15000, exportTimeoutMillis: 20000, shutdownTimeoutMillis: 2000,
   })
   const analytics = ctx.productAnalytics
+  const emit = vi.spyOn(ctx.productTelemetry, 'emit')
   const analyticsFiber = ctx.loader.resolve('product-analytics').fiber
   const telemetryFiber = entry.fiber
   const lifetime = new AbortController()
   onTestFinished(() => { lifetime.abort() })
   const policy = analytics.watchPolicy(lifetime.signal)[Symbol.asyncIterator]()
-  expect(await policy.next()).toEqual({ value: true, done: false })
-  for (const enabled of [false, true]) {
+  expect(await policy.next()).toEqual({ value: false, done: false })
+  await analytics.report({ eventName: 'desktop_app_launch', timestamp: 1, attributes: {} })
+  expect(identity).not.toHaveBeenCalled()
+  expect(emit).not.toHaveBeenCalled()
+  for (const enabled of [true, false, true]) {
     const changed = policy.next()
     await ctx.loader.root.update(entries.map(row => row.id === 'product-analytics'
       ? { ...row, config: { ...row.config as Record<string, unknown>, enabled } } : row))
@@ -68,9 +72,9 @@ it.each(['desktop', 'web'])('limits collection and its shutdown to the Desktop l
     if (!enabled) {
       await analytics.report({ eventName: 'desktop_app_launch', timestamp: 1, attributes: {} })
       expect(identity).not.toHaveBeenCalled()
+      expect(emit).not.toHaveBeenCalled()
     }
   }
-  const emit = vi.spyOn(ctx.productTelemetry, 'emit')
   await analytics.report({ eventName: 'desktop_app_launch', timestamp: 1, attributes: {} })
   expect(emit).toHaveBeenCalledWith(expect.objectContaining({ attributes: { app_version: 'test-version' } }))
   lifetime.abort()

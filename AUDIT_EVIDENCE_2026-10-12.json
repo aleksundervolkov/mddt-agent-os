@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-12",
+  "kind": "source-review-and-lockfile-advisories",
+  "evidence": {
+    "session_log_default": {
+      "path": "packages/session/session-log-deepseek/src/index.ts",
+      "line": 52,
+      "sha256": "f16ce60bf3cf52fe0b36e21440adf50418bdadde35b410dc2318c9c36e2d6b4e"
+    },
+    "session_log_capture": {
+      "path": "packages/session/session-log-deepseek/src/index.ts",
+      "line": 197,
+      "sha256": "f16ce60bf3cf52fe0b36e21440adf50418bdadde35b410dc2318c9c36e2d6b4e"
+    },
+    "session_log_wire_data": {
+      "path": "packages/session/session-log-deepseek/src/index.ts",
+      "line": 86,
+      "sha256": "f16ce60bf3cf52fe0b36e21440adf50418bdadde35b410dc2318c9c36e2d6b4e"
+    },
+    "analytics_default": {
+      "path": "packages/client/product-analytics/src/index.ts",
+      "line": 30,
+      "sha256": "ad9b6e766a2f7104bd4df3481fc5b5d066699742d378403912f44effa8ede371"
+    },
+    "analytics_identity": {
+      "path": "packages/client/product-analytics/src/index.ts",
+      "line": 91,
+      "sha256": "ad9b6e766a2f7104bd4df3481fc5b5d066699742d378403912f44effa8ede371"
+    },
+    "collector": {
+      "path": "packages/host/product-telemetry-otel/src/index.ts",
+      "line": 47,
+      "sha256": "8062795b9c10a8826eb1429ebdb1dd5b10ebb44572210a3109f78ae36e588ac4"
+    },
+    "feedback_capture": {
+      "path": "packages/session/session-telemetry-otel/src/index.ts",
+      "line": 221,
+      "sha256": "30d81ec2f07fbe1d9c620092cfa38f89ad5806bbf3d1ee562620955196f60185"
+    },
+    "redaction_default": {
+      "path": "packages/session/session-telemetry/src/coordinator.ts",
+      "line": 206,
+      "sha256": "95b54c800069ec144f66af8acaae30e07805d784abd4e21e22d584b68feae4ae"
+    },
+    "read_policy": {
+      "path": "packages/fs/fs-sandbox/src/index.ts",
+      "line": 7,
+      "sha256": "baba926440e3bcaf9c5f70c4e7d5478efd977d66c76e025c4deb82534ce3256b"
+    },
+    "sandbox_write_policy": {
+      "path": "packages/sandbox/sandbox-local/src/profiles.ts",
+      "line": 52,
+      "sha256": "b94dd0d0c49c8df63edcbdfe036fafb90eb0bb96e7613e73d46e27b009ae6aaa"
+    },
+    "credentials_permissions": {
+      "path": "packages/credentials/credentials-local/src/index.ts",
+      "line": 702,
+      "sha256": "0ad9a23ed1b80907ad0a8afd94326c30b93ba1e62abd64792b1829a0b9b8009f"
+    },
+    "install_input_filter": {
+      "path": "packages/client/ui-plugin-manager/src/client/sanitize-install-input.ts",
+      "line": 11,
+      "sha256": "99af7f620375757d01c28807a6ffead17a33c1412b0bb5c915072e48b35579fd"
+    },
+    "update_production_origin": {
+      "path": "apps/desktop/scripts/desktop-auto-update-environment.mjs",
+      "line": 18,
+      "sha256": "18e713339e93bb29659b3042c8c62d9d56b55c0462ef227268449bc653e12617"
+    }
+  },
+  "dependencyReport": "AUDIT_DEPENDENCIES_2026-10-12.json",
+  "modelCalls": 0,
+  "scopeExcludes": [
+    "installed desktop",
+    "owner credentials",
+    "live configuration",
+    "network capture",
+    "source build",
+    "exploit execution"
+  ]
+}

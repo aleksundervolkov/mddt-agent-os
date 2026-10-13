@@ -24,11 +24,11 @@
 | 标头 | 出现条件 | 值 |
 |---|---|---|
 | `user-agent` | 每个提供方 HTTP 请求，包括 Files API 操作 | 采用 `product/version (+url)` 形式的应用身份；默认产品为 `deepseek-harness` |
-| `x-deepseek-harness-user-id` | 每个已授权的模型请求 | 已解析 Harness home 的稳定匿名 UUID |
-| `x-deepseek-harness-session-id` | 携带会话 id 的模型请求 | 确切的请求 `sessionId` 字符串 |
+| `x-deepseek-harness-user-id` | 设置 `sendInstallationIdentity: true` 的模型请求 | 已解析 Harness home 的稳定匿名 UUID |
+| `x-deepseek-harness-session-id` | 明确启用身份发送且携带会话 id 的模型请求 | 确切的请求 `sessionId` 字符串 |
 | `x-deepseek-harness-compact` | 用途为 `compaction` 的模型请求 | 字面字符串 `1` |
 
-凭据失败发生在解析匿名用户 id 之前，因此未授权请求既不会发送这些标头，也不会创建身份文件。没有会话的直接请求会省略 `x-deepseek-harness-session-id`。会话标题请求没有额外的用途标头；请求携带 `sessionId` 时，仍然适用普通的会话 id 规则。
+身份标头默认关闭。设置 `sendInstallationIdentity: true` 后，凭据失败仍发生在解析匿名用户 id 之前，因此未授权请求既不会发送身份标头，也不会创建身份文件。没有会话的直接请求会省略 `x-deepseek-harness-session-id`。会话标题请求没有额外的用途标头；请求携带 `sessionId` 时，仍然适用明确启用后的会话 id 规则。
 
 ## 正文扩展事务
 
@@ -40,7 +40,7 @@
 
 ## `dsh_plugin_packages`
 
-[`@deepseek-ai/dsh-plugin-package-inventory-deepseek`](../packages/llm/plugin-package-inventory-deepseek/README.zh.md) 贡献完整存活的 Loader-backed 插件包清单。该字段默认启用。
+[`@deepseek-ai/dsh-plugin-package-inventory-deepseek`](../packages/llm/plugin-package-inventory-deepseek/README.zh.md) 贡献完整存活的 Loader-backed 插件包清单。该字段默认禁用，需设置 `enabled: true` 才会启用。
 
 ```json
 {
@@ -73,7 +73,7 @@
 
 ## `dsh_session_log`
 
-[`@deepseek-ai/dsh-session-log-deepseek`](../packages/session/session-log-deepseek/README.zh.md) 贡献权威会话日志的一段连续后缀。该字段默认启用。它适用于携带存活会话且至少存在一个事件的请求；直接请求、陈旧会话 id 或空日志会省略该字段，第一条待发事件本身超过 `maxBytes` 或无法序列化的请求也会省略该字段；组合可用 `enabled: false` 禁用它。下方示例使用逻辑 Session 格式 2 仅为说明协议字段，并不标识[当前写入格式](session-format-status.zh.md)。
+[`@deepseek-ai/dsh-session-log-deepseek`](../packages/session/session-log-deepseek/README.zh.md) 贡献权威会话日志的一段连续后缀。该字段默认禁用，需设置 `enabled: true` 才会启用。它适用于携带存活会话且至少存在一个事件的请求；直接请求、陈旧会话 id 或空日志会省略该字段，第一条待发事件本身超过 `maxBytes` 或无法序列化的请求也会省略该字段；设置 `enabled: false` 可再次禁用它。下方示例使用逻辑 Session 格式 2 仅为说明协议字段，并不标识[当前写入格式](session-format-status.zh.md)。
 
 ```json
 {

@@ -52,26 +52,25 @@ async function harness(
   await ctx.plugin(SessionProjectionRegistry)
   await ctx.plugin(AgentPresets, { default: 'fixture' })
   await ctx.plugin(DeepSeekLlmApiExtensionRegistry)
-  const inventory = enabled === undefined
-    ? ctx.plugin(PluginInventory)
-    : ctx.plugin(PluginInventory, { enabled })
+  const inventory = ctx.plugin(PluginInventory, { enabled: enabled ?? true })
   await inventory
   return { ctx, root, disposeInventory: () => inventory.dispose() }
 }
 
 describe('DeepSeek plugin package inventory', () => {
-  it('contributes by default and can be explicitly disabled', async () => {
-    const defaultHarness = await harness()
+  it('withholds inventory when disabled and permits an explicit opt-in', async () => {
+    expect(PluginInventory.Config({}).enabled).toBe(false)
+    const defaultHarness = await harness(false)
     const defaultFields = await defaultHarness.ctx.deepseekLlmApiExtensions.prepare({
       body: { messages: [] }, signal: SIGNAL,
     })
-    expect(defaultFields.fields).toHaveProperty('dsh_plugin_packages')
+    expect(defaultFields.fields).not.toHaveProperty('dsh_plugin_packages')
 
-    const disabledHarness = await harness(false)
-    const disabledFields = await disabledHarness.ctx.deepseekLlmApiExtensions.prepare({
+    const enabledHarness = await harness(true)
+    const enabledFields = await enabledHarness.ctx.deepseekLlmApiExtensions.prepare({
       body: { messages: [] }, signal: SIGNAL,
     })
-    expect(disabledFields.fields).not.toHaveProperty('dsh_plugin_packages')
+    expect(enabledFields.fields).toHaveProperty('dsh_plugin_packages')
   })
 
   it('reports active package versions once, retains parallel versions, and excludes inactive or loose entries', async () => {
@@ -262,7 +261,7 @@ describe('DeepSeek plugin package inventory', () => {
     await ctx.plugin(Loader)
     await ctx.plugin(AgentRegistry)
     await ctx.plugin(DeepSeekLlmApiExtensionRegistry)
-    await ctx.plugin(PluginInventory)
+    await ctx.plugin(PluginInventory, { enabled: true })
     ctx.loader.builtins.noop = () => {}
     await ctx.loader.create({ name: 'cordis:noop' })
     const prepared = await ctx.deepseekLlmApiExtensions.prepare({ body: { messages: [] }, signal: SIGNAL })

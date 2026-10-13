@@ -381,7 +381,7 @@ describe('DeepSeekAdapter against a mock server', () => {
     })
     // App attribution and DeepSeek request identity are independent wire facts.
     expect(server.headers[0]?.['user-agent']).toBe(userAgent())
-    expect(server.headers[0]?.['x-deepseek-harness-user-id']).toBe(getOrCreateAnonymousUserId())
+    expect(server.headers[0]).not.toHaveProperty('x-deepseek-harness-user-id')
     expect(server.headers[0]).not.toHaveProperty('x-deepseek-harness-session-id')
     expect(server.headers[0]).not.toHaveProperty('http-referer')
     expect(server.headers[0]).not.toHaveProperty('x-openrouter-title')
@@ -1210,9 +1210,9 @@ describe('DeepSeekAdapter against a mock server', () => {
     expect(kinds).toEqual(['block-start', 'text-delta', 'block-end', 'usage', 'finish'])
   })
 
-  it('forwards the harness user and session ids for host-side trajectory routing', async () => {
+  it('forwards the harness user and session ids only after explicit opt-in', async () => {
     const server = await mockServer([{ kind: 'sse', events: textEvents }])
-    const ctx = await harness(server.url)
+    const ctx = await harness(server.url, { sendInstallationIdentity: true })
 
     await assemble(ctx, {
       model: 'deepseek-v4-flash',
@@ -1729,6 +1729,8 @@ describe('DeepSeekAdapter against a mock server', () => {
 describe('plugin registration and config', () => {
   it('resolves the Messages endpoint without rewriting overrides', () => {
     expect(resolveAdapterOptions({}).baseURL).toBe('https://api.deepseek.com/anthropic')
+    expect(resolveAdapterOptions({}).sendInstallationIdentity).toBe(false)
+    expect(resolveAdapterOptions({ sendInstallationIdentity: true }).sendInstallationIdentity).toBe(true)
     for (const baseURL of ['https://example.com', 'https://example.com/custom']) {
       expect(resolveAdapterOptions({ baseURL }).baseURL).toBe(baseURL)
     }
@@ -2328,7 +2330,7 @@ describe('plugin registration and config', () => {
 
     expect(options).toHaveBeenCalledTimes(1)
     expect(resolveAuth).toHaveBeenCalledTimes(1)
-    expect(resolveUserId).toHaveBeenCalledTimes(1)
+    expect(resolveUserId).not.toHaveBeenCalled()
     expect(server.headers[0]?.['x-api-key']).toBe('per-request-key')
   })
 

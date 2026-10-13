@@ -25,7 +25,8 @@ it.skipIf(webSnapshotMode() === 'record')('persists the upload switch and omits 
   const scaffold = await launchWebScaffold({ deepSeekMissingCredential: true, extraOverlayPath: overlay })
   onTestFinished(() => scaffold.close())
   await scaffold.ctx.credentials.set(key, 'upload-browser-test-key')
-  const browser = await chromium.launch()
+  const executablePath = process.env.DSH_PLAYWRIGHT_EXECUTABLE_PATH
+  const browser = await chromium.launch(executablePath === undefined ? {} : { executablePath })
   onTestFinished(() => browser.close())
   const page = await newEnglishPage(browser)
   await page.goto(scaffold.authenticatedUrl)

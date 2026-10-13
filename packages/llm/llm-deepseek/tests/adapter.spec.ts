@@ -125,9 +125,21 @@ describe('direct Messages HTTP', () => {
     expect(http.requests[1]?.headers).not.toHaveProperty('anthropic-beta')
   })
 
+  it('omits optional installation and session identifiers in an ordinary model request', async () => {
+    const http = await endpoint()
+    const resolveUserId = vi.fn(() => 'synthetic-installation-canary' as AnonymousUserId)
+    const llm = adapter({ baseURL: http.url }, { resolveUserId })
+    await assemble(llm.stream(options({ sessionId: SessionId('synthetic-session-canary') })))
+    expect(http.requests[0]?.headers).not.toHaveProperty('x-deepseek-harness-user-id')
+    expect(http.requests[0]?.headers).not.toHaveProperty('x-deepseek-harness-session-id')
+    expect(http.requests[0]?.headers).toHaveProperty('user-agent')
+    expect(resolveUserId).not.toHaveBeenCalled()
+    expect(http.requests[0]?.body).toHaveProperty('messages')
+  })
+
   it('uses the Messages endpoint, authentication, attribution and final usage', async () => {
     const http = await endpoint()
-    const llm = adapter({ baseURL: http.url })
+    const llm = adapter({ baseURL: http.url, sendInstallationIdentity: true })
     const response = await assemble(llm.stream(options({ model: 'deepseek-flash', sessionId: SessionId('session-test'), purpose: 'compaction' })), 'deepseek-flash')
     expect(response.message.content).toEqual([{ type: 'text', text: 'Hello 世界' }])
     expect(response.message.source).toMatchObject({

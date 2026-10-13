@@ -1,10 +1,8 @@
-# MDDT Agent OS
-
-Downstream fork of DeepSeek Harness. [Fork status and roadmap](MDDT_AGENT_OS.md). The original project documentation follows.
-
 # DeepSeek Harness
 
 English | [中文](README.zh.md)
+
+This repository is a downstream fork for MDDT Agent OS. [Fork status and roadmap](MDDT_AGENT_OS.md). The original project documentation follows.
 
 DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
 

@@ -178,10 +178,10 @@ it('drains a Session log above the configured maxBytes across consecutive routed
 })
 
 
-it('changes API log upload on the next request without replacing the plugin fiber', async () => {
-  const { ctx, server } = await boot({ enabled: true }, { sequence: ['success'], repeatLast: true })
+it('keeps canary history local across model changes until an explicit opt-in', async () => {
+  const { ctx, server } = await boot({ enabled: false }, { sequence: ['success'], repeatLast: true })
   const session = ctx.sessions.create(SessionId('live-upload-setting'))
-  session.append('user/message', createUserMessage({ content: [{ type: 'text', text: 'Hello' }], source: { kind: 'user' } }), { surfaceOp: 'append' })
+  session.append('user/message', createUserMessage({ content: [{ type: 'text', text: 'synthetic-archived-canary' }], source: { kind: 'user' } }), { surfaceOp: 'append' })
   const entry = [...ctx.loader.entries()].find(entry => entry.options.name === '@deepseek-ai/dsh-session-log-deepseek')!
   const fiber = entry.fiber
   const request = async () => {
@@ -190,19 +190,23 @@ it('changes API log upload on the next request without replacing the plugin fibe
     expect(chunks.at(-1)).toMatchObject({ type: 'finish', reason: { kind: 'stop' } })
   }
   await request()
-  const accepted = SessionLogDeepSeek.acceptedThrough(session)
-  await entry.update({ config: { enabled: false } })
-  await ctx.loader.await()
-  expect(entry.fiber === fiber).toBe(true)
-  recordFeedback(session, { text: 'Recorded while API upload is off' })
-  await request()
+  expect(server.requests[0]!.body).not.toHaveProperty('dsh_session_log')
+  recordFeedback(session, { text: 'synthetic-feedback-canary' })
+  const current = createUserMessage({ content: [{ type: 'text', text: 'current question' }], source: { kind: 'user' } })
+  const alternate = []
+  for await (const chunk of ctx.llm.stream({ provider: 'deepseek-official', model: 'alternate-model',
+    sessionId: session.id, messages: [current] })) alternate.push(chunk)
+  expect(alternate.at(-1)).toMatchObject({ type: 'finish', reason: { kind: 'stop' } })
   expect(server.requests[1]!.body).not.toHaveProperty('dsh_session_log')
-  expect(SessionLogDeepSeek.acceptedThrough(session)).toBe(accepted)
+  expect(JSON.stringify(server.requests[1]!.body)).not.toContain('synthetic-archived-canary')
+  expect(JSON.stringify(server.requests[1]!.body)).not.toContain('synthetic-feedback-canary')
+  expect(SessionLogDeepSeek.acceptedThrough(session)).toBe(-1)
   await entry.update({ config: { enabled: true } })
   await ctx.loader.await()
   expect(entry.fiber === fiber).toBe(true)
   await request()
   const resumed = (server.requests[2]!.body as { dsh_session_log: DeepSeekSessionLogExtension }).dsh_session_log
-  expect(resumed.afterSeq).toBe(accepted)
-  expect(resumed.events.some(event => event.type === 'feedback/record')).toBe(true)
+  expect(resumed.afterSeq).toBe(-1)
+  expect(JSON.stringify(resumed.events)).toContain('synthetic-archived-canary')
+  expect(JSON.stringify(resumed.events)).toContain('synthetic-feedback-canary')
 })

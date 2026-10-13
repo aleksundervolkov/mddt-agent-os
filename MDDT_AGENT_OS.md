@@ -1,17 +1,19 @@
 # MDDT Agent OS
 
-MDDT Agent OS is a downstream fork of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). It retains the upstream MIT license and third-party notices. This repository currently contains the upstream source plus this fork plan; the application has not yet been rebranded or released from this fork.
+MDDT Agent OS is a downstream fork of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness). It retains the upstream MIT license and third-party notices. This repository retains the upstream source with local default-off reporting changes; the application has not yet been rebranded or released from this fork.
 
 ## Roadmap
 
 | ID | Work | Status | Acceptance |
 | --- | --- | --- | --- |
 | OS-01 | Maintain upstream synchronization | Planned; remotes configured | Record each imported upstream SHA, review the incoming diff, merge into the product branch, resolve conflicts, and run checks appropriate to the affected code before release. No unattended merge or deployment. |
-| OS-02 | Audit security and outbound data | Planned | Inventory network destinations and payload producers across the runtime, desktop app, plugins, updates, credentials, analytics, session logs and dependencies. Verify traffic from a source-built application using synthetic data. Separate intentional model requests from developer reporting; document findings and remaining gaps. |
+| OS-02 | Audit security and outbound data | Source/lockfile review complete; default-off reporting fixes tested ([spec](OS-02-PRIVACY-SPEC.md)); source-built traffic qualification pending ([report](AUDIT_2026-10-12.md)) | Inventory network destinations and payload producers across the runtime, desktop app, plugins, updates, credentials, analytics, session logs and dependencies. Verify traffic from a source-built application using synthetic data. Separate intentional model requests from developer reporting; document findings and remaining gaps. |
 | OS-03 | Workspace folders, instructions and prompts in the application | Planned | The workspace settings show its working directory and additional context folders, access mode, assigned role, instruction sources, precedence and effective prompt. Users can edit writable source instructions and role prompts, preview the result, save or cancel, and see when changes apply. New chats inherit the saved workspace role; restart preserves it. Changes do not silently broaden access or overwrite external file edits. |
 | OS-04 | Contribution to upstream | Candidate after OS-03 | Prepare the generic workspace-settings feature on a separate branch based on upstream/master, with focused tests and documentation. Exclude MDDT branding, private context, provider accounts and personal configuration. Opening the upstream PR is a separate step after the feature is implemented and reviewed. |
 
 OS-03 includes visible distinctions between source files, generated snapshots and read-only sources; editing the effective preview alone must not create an undisclosed second source of truth. A changed folder or permission requires the normal access controls. Show concurrent source changes and require reconciliation rather than overwriting them.
+
+For a Desktop pilot, first qualify source-built outbound traffic with synthetic data. The development launcher keeps Harness and browser data outside the installed application's default home, but it can register itself as the macOS `dsh://` handler and inherit environment variables and global agent context. A local unsigned packaged build has no update feed, yet shares the upstream application identity and default user-data/home paths; do not replace or launch it against the installed application's state without a separately reviewed isolation and rollback procedure.
 
 ## Upstream synchronization
 

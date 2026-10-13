@@ -9,7 +9,7 @@ kind: "package-library"
 
 ## 概述
 
-DeepSeek Harness 为每个 harness home 使用一个匿名标识符，以关联同一套安装产生的遥测、反馈与 DeepSeek 请求，同时不识别用户身份。该随机 UUID 存储在 `$DSH_HOME/.anonymous-user-id`（`$DSH_HOME` 默认为 `~/.dsh`）中，可跨重启保留，并在你删除文件后重新生成。不同 harness home 使用不同的标识符，且该值不包含机器或账户数据。内置功能会自动创建并附加该值；包消费方可以复用同一个值进行安装范围的关联，但无法跨 home 关联记录。
+DeepSeek Harness 为每个 harness home 使用一个匿名标识符，以关联同一套安装产生的遥测、反馈与 DeepSeek 请求，同时不识别用户身份。该随机 UUID 存储在 `$DSH_HOME/.anonymous-user-id`（`$DSH_HOME` 默认为 `~/.dsh`）中，可跨重启保留，并在你删除文件后重新生成。不同 harness home 使用不同的标识符，且该值不包含机器或账户数据。本地反馈确认会创建该值；可选的遥测与提供方请求身份功能只有在启用后才附加它。包消费方可以复用同一个值进行安装范围的关联，但无法跨 home 关联记录。
 
 ## 目录
 
@@ -25,15 +25,15 @@ DeepSeek Harness 为每个 harness home 使用一个匿名标识符，以关联�
 <a id="use-this-package"></a>
 ## 使用本包
 
-当你希望本机安装外发的记录能被识别为来自同一个 harness home——遥测、反馈与 DeepSeek 请求都携带同一个共享 id——本包就是提供它的地方。无需安装或配置任何东西：id 会自动出现，已随附的反馈、遥测与 DeepSeek 功能已经在使用它。不要用它来识别用户，也不要用它关联不同 home 之间的记录；它是匿名的且限定于单个 home。
+当你明确启用遥测或 DeepSeek 请求身份，并希望导出记录共享同一个 harness home id 时，本包提供该 id。反馈确认只在本地显示它；关闭的导出通道不会发送它。不要用它来识别用户，也不要用它关联不同 home 之间的记录；它是匿名的且限定于单个 home。
 
 ### 该 id 能为你做什么
 
-你的安装外发的三类内容携带同一个 id，因此记录在它们之间可以相互对应：
+以下用途仅在各自独立的导出策略允许时共享同一个 id：
 
 - **会话遥测**——你的遥测导出会以 `user.id` Resource 属性携带该 id，采集器因此可以按安装分组记录。
-- **反馈**——每条反馈确认都会标明记录该反馈的匿名安装。
-- **DeepSeek 请求**——每次提供方请求都会携带 `x-deepseek-harness-user-id` 标头，因此可以按安装归因用量。
+- **反馈**——每条本地反馈确认都会标明记录该反馈的匿名安装；关闭遥测不会导出该记录。
+- **DeepSeek 请求**——`sendInstallationIdentity: true` 会添加 `x-deepseek-harness-user-id` 标头；默认请求不带该标头。
 
 ### 查看与重置 id
 
@@ -41,7 +41,7 @@ DeepSeek Harness 为每个 harness home 使用一个匿名标识符，以关联�
 
 ### 在自己的包中使用
 
-当你构建的功能需要共享该安装的匿名 id 时，导入一次并复用该值即可——遥测、反馈与 DeepSeek 已经在使用同一个 id，因此你的记录能与它们相互对应：
+当你构建的功能需要共享该安装的匿名 id 时，导入一次并复用该值。启用的遥测与明确选择发送的 DeepSeek 身份标头使用此 id；本地反馈确认也会标明此 id：
 
 ```ts
 import { getOrCreateAnonymousUserId } from '@deepseek-ai/dsh-anonymous-user-id'
@@ -96,7 +96,7 @@ const userId = getOrCreateAnonymousUserId() // stable for the process lifetime
 - [dsh-home-paths](../../util/home-paths/README.zh.md)——负责 `$DSH_HOME` 与 `~/.dsh` 的解析。
 - [dsh-session-telemetry-otel](../../session/session-telemetry-otel/README.zh.md)——将该 id 作为 OTel Resource `user.id` 上报。
 - [dsh-command-feedback](../../feedback/command-feedback/README.zh.md)——将 id 嵌入反馈确认。
-- [dsh-llm-deepseek](../../llm/llm-deepseek/README.zh.md)——在提供方请求中发送 `x-deepseek-harness-user-id`。
+- [dsh-llm-deepseek](../../llm/llm-deepseek/README.zh.md)——仅在启用 `sendInstallationIdentity` 时于提供方请求中发送 `x-deepseek-harness-user-id`。
 - [会话遥测子系统](../../../docs/subsystems/session-telemetry.zh.md)——遥测 seam 及其后端约定。
 
 -----
@@ -104,7 +104,7 @@ const userId = getOrCreateAnonymousUserId() // stable for the process lifetime
 <a id="model-experience"></a>
 ## 模型体验
 
-无，因为该共享标识符只会作为模型不可见的 HTTP 元数据发送给 DeepSeek，且不注册任何面向模型的内容。
+无，因为 DeepSeek 请求默认不携带该标识符，而 `sendInstallationIdentity: true` 仅将其作为模型不可见的 HTTP 元数据发送，不注册任何面向模型的内容。
 
 #### KV Cache 影响
 
@@ -120,7 +120,7 @@ const userId = getOrCreateAnonymousUserId() // stable for the process lifetime
 - **删除后无法恢复**——文件丢失后会按设计生成新的匿名身份；恢复需要稳定的派生材料，这会削弱匿名性。
 - **Best-effort 并发**——如果读取方恰好落在并发进程完成独占创建但尚未写完的狭窄时间窗内，本次运行可能使用不同的内存 UUID；后续启动会收敛到已持久化的值。
 - **没有跨 home 身份**——不同 `$DSH_HOME` 值之间无法关联。
-- **已配置的 DeepSeek 网关会收到该 id**——`dsh-llm-deepseek` 会把稳定标头发送至解析后的 `baseURL`（包括部署覆盖），且不受遥测共享模式影响。
+- **明确启用身份发送的 DeepSeek 网关会收到该 id**——`sendInstallationIdentity: true` 会把稳定标头发送至解析后的 `baseURL`（包括部署覆盖），且不受遥测共享模式影响。
 - **删除文件不会重置当前进程**——记忆化会让本次运行的 id 一直保留到下次启动。
 
 <a id="dev-note"></a>

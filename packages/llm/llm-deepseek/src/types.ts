@@ -59,6 +59,8 @@ export interface DeepSeekConnectionOptions {
   defaultContextWindow: number
   /** Advisory models exposed to discovery consumers; requests remain unrestricted. */
   models: readonly DeepSeekCatalogModel[]
+  /** Whether requests carry the persistent installation id and Session id. */
+  sendInstallationIdentity: boolean
   /** Maximum provider idle time while one stream read is outstanding. */
   streamIdleTimeoutMs: number
   /** Maximum accumulated file-referenced image bytes in one request. */
